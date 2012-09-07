@@ -38,7 +38,7 @@ void KW_CS2Surf::RenderSubspaceStl()
 			{
 				continue;
 			}
-			//////test,for making the partition example only
+			////test,for making the partition example only
 			//if (iFaceID==10 || iFaceID==35 || iFaceID==45 || iFaceID==67 || iFaceID==59)
 			//{
 			//	glColor3f(0,0,1);
@@ -298,15 +298,19 @@ void KW_CS2Surf::RenderPolyh()
 		{
 			continue;
 		}
-		////for the partition example only
+		//for the partition example only
 		//if (i!=0 &&i!=1 &&i!=2
 		//	 &&i!=5  &&i!=6  &&i!=12
 		//	 &&i!=13  &&i!=15  &&i!=14)
 		//{
 		//	continue;
 		//}
+		//if (i!=2&&i!=5&&i!=6&&i!=15&&i!=14)
+		//{
+		//	continue;
+		//}
 
-		switch(i%12)//10
+		switch(i%12)//12 10
 		{
 		case 0:
 			mat_dif[0]=1;mat_dif[1]=0;mat_dif[2]=0;
