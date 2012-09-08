@@ -1597,167 +1597,6 @@ void GeometryAlgorithm::ExtrusionLocalRefine(KW_Mesh& NewMesh,std::vector<Facet_
 	DivideFacets(NewMesh,fhRefineTri,vecNewEdgeVertex,vecOriVertex);
 }
 
-void GeometryAlgorithm::DeformationLocalRefine(KW_Mesh OldMesh,KW_Mesh& NewMesh,
-									std::vector<Point_3> OldHandlePos,
-									std::vector<Point_3> NewHandlePos,
-									double dSquaredDistanceThreshold,
-									std::vector<Point_3>& testCentroidPoint,
-									std::vector<Point_3>& testmovedCentroidPoint,
-									std::vector<Facet_handle>& testfhRefineTri)
-{
-	std::vector<Facet_handle> fhRefineTri;
-	GetRefineTri(OldMesh,NewMesh,OldHandlePos,NewHandlePos,dSquaredDistanceThreshold,
-				testCentroidPoint,testmovedCentroidPoint,fhRefineTri);
-	testfhRefineTri=fhRefineTri;
-
-	//compute the new edge point positions in advance
-	//make use of the edge index and NewMidpoint in wedge-edge-based deformation
-	//may be very slow!and may contain error for border edges
-	Halfedge_iterator  HI=NewMesh.halfedges_begin();
-	do 
-	{
-		HI->SetEdgeIndex(-1);
-		HI++;
-	} while(HI!=NewMesh.halfedges_end());
-	//set the index of each edge starting from 0
-	int iIndex=0;
-	HI=NewMesh.halfedges_begin();
-	do 
-	{
-		if (HI->GetEdgeIndex()==-1 || HI->opposite()->GetEdgeIndex()==-1)
-		{
-			HI->SetEdgeIndex(iIndex);
-			HI->opposite()->SetEdgeIndex(iIndex);
-			iIndex++;
-			//compute the new edge point position
-			Point_3 NearPoints[2];
-			NearPoints[0]=HI->vertex()->point();
-			NearPoints[1]=HI->opposite()->vertex()->point();
-			Point_3 FarPoints[2];
-			FarPoints[0]=HI->next()->vertex()->point();
-			FarPoints[1]=HI->opposite()->next()->vertex()->point();
-			double NewX=3.0/8.0*(NearPoints[0].x()+NearPoints[1].x())+1.0/8.0*(FarPoints[0].x()+FarPoints[1].x());
-			double NewY=3.0/8.0*(NearPoints[0].y()+NearPoints[1].y())+1.0/8.0*(FarPoints[0].y()+FarPoints[1].y());
-			double NewZ=3.0/8.0*(NearPoints[0].z()+NearPoints[1].z())+1.0/8.0*(FarPoints[0].z()+FarPoints[1].z());
-			HI->SetNewMidPoint(Point_3(NewX,NewY,NewZ));
-			HI->opposite()->SetNewMidPoint(Point_3(NewX,NewY,NewZ));
-		}
-		HI++;
-	} while(HI!=NewMesh.halfedges_end());
-
-	//change the topology
-	vector<Vertex_handle> vecNewEdgeVertex,vecOriVertex;
-	DivideFacets(NewMesh,fhRefineTri,vecNewEdgeVertex,vecOriVertex);
-
-	//update positions
-	LocalRefineUpdateVertexPos(vecNewEdgeVertex,vecOriVertex);
-
-}
-
-int GeometryAlgorithm::GetRefineTri(KW_Mesh OldMesh,KW_Mesh& NewMesh,
-									std::vector<Point_3> OldHandlePos,
-									std::vector<Point_3> NewHandlePos,
-									double dSquaredDistanceThreshold,
-									std::vector<Point_3>& testCentroidPoint,
-									std::vector<Point_3>& testmovedCentroidPoint,
-									std::vector<Facet_handle>& fhRefineTri)
-{
-	std::vector<Facet_handle> OldTri;
-	std::vector<Facet_handle> NewTri;
-	for ( Facet_iterator i=OldMesh.facets_begin(),j=NewMesh.facets_begin();
-		i!=OldMesh.facets_end(),j!=NewMesh.facets_end(); i++,j++)
-	{
-		Halfedge_around_facet_circulator k = i->facet_begin();
-		vector<Point_3> OldTriVertex;
-		do 
-		{
-			OldTriVertex.push_back(k->vertex()->point());
-		} while(++k != i->facet_begin());
-		Point_3 OldCentroidPoint=CGAL::centroid(OldTriVertex.begin(),OldTriVertex.end());
-		Triangle_3 OldTriangle(OldTriVertex.at(0),OldTriVertex.at(1),OldTriVertex.at(2));
-		
-		Halfedge_around_facet_circulator k1 = j->facet_begin();
-		vector<Point_3> NewTriVertex;
-		do 
-		{
-			NewTriVertex.push_back(k1->vertex()->point());
-		} while(++k1 != j->facet_begin());
-		Point_3 NewCentroidPoint=CGAL::centroid(NewTriVertex.begin(),NewTriVertex.end());
-		Triangle_3 NewTriangle(NewTriVertex.at(0),NewTriVertex.at(1),NewTriVertex.at(2));
-
-		if (OldCentroidPoint!=NewCentroidPoint)
-		{
-//			if (CGAL::squared_distance(OldCentroidPoint,NewCentroidPoint)>0.2)
-			if (NewTriangle.squared_area()>=1.2*OldTriangle.squared_area())
-			{
-				OldTri.push_back(i);
-				NewTri.push_back(j);
-				//kw new
-				fhRefineTri.push_back(j);
-			} 
-		}
-	}
-	//kw new
-	return fhRefineTri.size();
-
-	for (unsigned int i=0;i<OldTri.size();i++)
-	{
-		Halfedge_around_facet_circulator k = OldTri.at(i)->facet_begin();
-		std::list<Point_3> OldTriVertex;
-		do 
-		{
-			OldTriVertex.push_back(k->vertex()->point());
-		} while(++k != OldTri.at(i)->facet_begin());
-		Point_3 OldCentroidPoint=CGAL::centroid(OldTriVertex.begin(),OldTriVertex.end());
-
-		double dSumweight=0;
-		Vector_3 SumVectorByWeight(CGAL::NULL_VECTOR);
-		double dMaxweight=0;
-		for (unsigned int j=0;j<OldHandlePos.size();j++)
-		{
-			Sphere_3 sphere(OldHandlePos.at(j),dSquaredDistanceThreshold);
-			if (sphere.has_on_unbounded_side(OldCentroidPoint))
-			{
-				continue;
-			}
-			double dCurrentSquaredDistance=CGAL::squared_distance(OldHandlePos.at(j),NewHandlePos.at(j));
-			double dCurrentWeight=pow((1-dCurrentSquaredDistance/dSquaredDistanceThreshold),3);
-			SumVectorByWeight=(NewHandlePos.at(j)-OldHandlePos.at(j))*dCurrentWeight+SumVectorByWeight;
-			dSumweight+=dCurrentWeight;
-			if (dCurrentWeight>=dMaxweight)
-			{
-				dMaxweight=dCurrentWeight;
-			}
-		}
-		if (dMaxweight==0)
-		{
-			continue;
-		}
-		SumVectorByWeight=SumVectorByWeight/dSumweight*dMaxweight;
-
-		Point_3 MovedOldCentroidPoint=OldCentroidPoint+SumVectorByWeight;
-
-		Halfedge_around_facet_circulator n = NewTri.at(i)->facet_begin();
-		Point_3 Tripoint[3];
-		int index=0;
-		do 
-		{
-			Tripoint[index]=(n->vertex()->point());
-			index++;
-		} while(++n != NewTri.at(i)->facet_begin());
-		Triangle_3 FacetTri(Tripoint[0],Tripoint[1],Tripoint[2]);
-		Point_3 MovedOldCentroidPointProj=FacetTri.supporting_plane().projection(MovedOldCentroidPoint);
-		//Line_3 line(MovedOldCentroidPoint,MovedOldCentroidPointProj);
-		//if (!CGAL::do_intersect(FacetTri,line))
-		if (!FacetTri.has_on(MovedOldCentroidPointProj))
-		{
-			testCentroidPoint.push_back(OldCentroidPoint);
-			testmovedCentroidPoint.push_back(MovedOldCentroidPointProj);
-			fhRefineTri.push_back(NewTri.at(i));
-		}
-	}
-	return fhRefineTri.size();
-}
 
 void GeometryAlgorithm::DivideFacets(KW_Mesh& NewMesh,std::vector<Facet_handle>& fhRefineTri,
 									 vector<Vertex_handle>& vecNewEdgeVertex, vector<Vertex_handle>& vecOriVertex)
@@ -1901,6 +1740,9 @@ void GeometryAlgorithm::DivideFacet5Eto4Tri(KW_Mesh& NewMesh,Facet_handle& fhRef
 
 	//store new position for newedge vertices
 	hh02->vertex()->SetLRNewPos(hh2->GetNewMidPoint());
+	//mark the new vertex, for later updating the roi and static vertices for deformation 
+	hh02->vertex()->SetReserved(-1);
+
 	//collect newedge and ori vertices
 	vector<Vertex_handle>::iterator Iter=find(vecNewEdgeVertex.begin(),vecNewEdgeVertex.end(),hh02->vertex());
 	if (Iter==vecNewEdgeVertex.end())
@@ -1956,6 +1798,10 @@ void GeometryAlgorithm::DivideFacet4Eto4Tri(KW_Mesh& NewMesh,Facet_handle& fhRef
 	//store new position for newedge vertices
 	hh01->vertex()->SetLRNewPos(hh1->GetNewMidPoint());
 	hh02->vertex()->SetLRNewPos(hh2->GetNewMidPoint());
+	//mark the new vertex, for later updating the roi and static vertices for deformation 
+	hh01->vertex()->SetReserved(-1);
+	hh02->vertex()->SetReserved(-1);
+
 	//collect newedge and ori vertices
 	vector<Vertex_handle>::iterator Iter=find(vecNewEdgeVertex.begin(),vecNewEdgeVertex.end(),hh01->vertex());
 	if (Iter==vecNewEdgeVertex.end())
@@ -2015,6 +1861,11 @@ void GeometryAlgorithm::DivideFacet3Eto4Tri(KW_Mesh& NewMesh,Facet_handle& fhRef
 	hh00->vertex()->SetLRNewPos(hh0->GetNewMidPoint());
 	hh01->vertex()->SetLRNewPos(hh1->GetNewMidPoint());
 	hh02->vertex()->SetLRNewPos(hh2->GetNewMidPoint());
+	//mark the new vertex, for later updating the roi and static vertices for deformation 
+	hh00->vertex()->SetReserved(-1);
+	hh01->vertex()->SetReserved(-1);
+	hh02->vertex()->SetReserved(-1);
+
 	//collect newedge and ori vertices
 	vector<Vertex_handle>::iterator Iter=find(vecNewEdgeVertex.begin(),vecNewEdgeVertex.end(),hh00->vertex());
 	if (Iter==vecNewEdgeVertex.end())
@@ -2095,70 +1946,6 @@ void GeometryAlgorithm::DivideFacet4Eto2Tri(KW_Mesh& NewMesh,Facet_handle& fhRef
 
 
 	hh000=NewMesh.split_facet(hh1,hh00);
-}
-
-void GeometryAlgorithm::LocalRefineUpdateVertexPos(vector<Vertex_handle> vecNewEdgeVertex,vector<Vertex_handle> vecOriVertex)
-{
-	//update pos of new edge vertices
-	for (unsigned int i=0;i<vecNewEdgeVertex.size();i++)
-	{
-		vecNewEdgeVertex.at(i)->point()=vecNewEdgeVertex.at(i)->GetLRNewPos();
-	}
-	//calculate new pos of original vertices
-	for (unsigned int i=0;i<vecOriVertex.size();i++)
-	{
-		////original loop scheme
-		//double dDegree=(double)vecOriVertex.at(i)->degree();
-		//double dBeta=(5.0/8.0-(3.0/8.0+cos(2*CGAL_PI/dDegree)/4.0)*(3.0/8.0+cos(2*CGAL_PI/dDegree)/4.0))/dDegree;
-		//double dCenterWeight=1.0-dDegree*dBeta;
-		//double dNewX,dNewY,dNewZ;
-		//dNewX=dNewY=dNewZ=0;
-		//Halfedge_around_vertex_circulator Havc=vecOriVertex.at(i)->vertex_begin();
-		//do 
-		//{
-		//	dNewX=dNewX+Havc->opposite()->vertex()->point().x()*dBeta;
-		//	dNewY=dNewY+Havc->opposite()->vertex()->point().y()*dBeta;
-		//	dNewZ=dNewZ+Havc->opposite()->vertex()->point().z()*dBeta;
-		//	Havc++;
-		//} while(Havc!=vecOriVertex.at(i)->vertex_begin());
-		//dNewX=dNewX+dCenterWeight*vecOriVertex.at(i)->point().x();
-		//dNewY=dNewY+dCenterWeight*vecOriVertex.at(i)->point().y();
-		//dNewZ=dNewZ+dCenterWeight*vecOriVertex.at(i)->point().z();
-		
-		//joe warren scheme
-		double dDegree=(double)vecOriVertex.at(i)->degree();
-		double dBeta=0;
-		if (dDegree==3)
-		{
-			dBeta=3.0/16.0;
-		}
-		else
-		{
-			dBeta=3.0/(8.0*dDegree);
-		}
-		double dCenterWeight=1.0-dDegree*dBeta;
-		double dNewX,dNewY,dNewZ;
-		dNewX=dNewY=dNewZ=0;
-		Halfedge_around_vertex_circulator Havc=vecOriVertex.at(i)->vertex_begin();
-		do 
-		{
-			dNewX=dNewX+Havc->opposite()->vertex()->point().x()*dBeta;
-			dNewY=dNewY+Havc->opposite()->vertex()->point().y()*dBeta;
-			dNewZ=dNewZ+Havc->opposite()->vertex()->point().z()*dBeta;
-			Havc++;
-		} while(Havc!=vecOriVertex.at(i)->vertex_begin());
-		dNewX=dNewX+dCenterWeight*vecOriVertex.at(i)->point().x();
-		dNewY=dNewY+dCenterWeight*vecOriVertex.at(i)->point().y();
-		dNewZ=dNewZ+dCenterWeight*vecOriVertex.at(i)->point().z();
-
-
-		vecOriVertex.at(i)->SetLRNewPos(Point_3(dNewX,dNewY,dNewZ));
-	}
-	//update new pos of original vertices
-	for (unsigned int i=0;i<vecOriVertex.size();i++)
-	{
-		vecOriVertex.at(i)->point()=vecOriVertex.at(i)->GetLRNewPos();
-	}
 }
 
 
