@@ -1130,6 +1130,24 @@ bool CMeshDeformation::SetModifiedPointsPos(KW_Mesh& Mesh,vector<Point_3>& testp
 	Mesh.SetRenderInfo(true,true,false,false,false);
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//local refinement related
+	//-------------------------------------------------------------------------------------
 	////back up for local refine
 	//for (unsigned int i=0;i<this->vecDeformCurvePoint3d.size();i++)
 	//{
@@ -1138,21 +1156,32 @@ bool CMeshDeformation::SetModifiedPointsPos(KW_Mesh& Mesh,vector<Point_3>& testp
 	//}
 
 	//OBJHandle::UnitizeCGALPolyhedron(Mesh,false,false);
-	//std::ofstream outNoLR("resultNoLR.obj",ios_base::out | ios_base::trunc);
-	//print_polyhedron_wavefront(outNoLR,Mesh);
+	std::ofstream outNoLR("resultNoLR.obj",ios_base::out | ios_base::trunc);
+	print_polyhedron_wavefront(outNoLR,Mesh);
 
-	//vector<Point_3> testCentroidPoint;
-	//vector<Point_3> testmovedCentroidPoint;
-	//vector<Facet_handle> testfhRefineTri;
-	//GeometryAlgorithm::DeformationLocalRefine(OldMesh,Mesh,OldHandlePos,NewHandlePos,this->dSquaredDistanceThreshold,
-	//	this->vecTestPoint,testmovedCentroidPoint,testfhRefineTri);//testCentroidPoint
+	vector<Point_3> testCentroidPoint;
+	vector<Point_3> testmovedCentroidPoint;
+	vector<Facet_handle> testfhRefineTri;
+	DeformationLocalRefine(OldMesh,Mesh,OldHandlePos,NewHandlePos,this->dSquaredDistanceThreshold,
+		this->vecHandleNbVertex,this->ROIVertices,this->AnchorVertices,
+		this->vecTestPoint,testmovedCentroidPoint,testfhRefineTri);//testCentroidPoint
 
+	//implement the real deformation
+	temp=this->vecHandleNbVertex;
+	temp.insert(temp.end(),this->ROIVertices.begin(),this->ROIVertices.end());
+	temp.insert(temp.end(),this->AnchorVertices.begin(),this->AnchorVertices.end());
+	GeometryAlgorithm::ComputeCGALMeshUniformLaplacian(temp);
+	CDeformationAlgorithm::FlexibleDeform(dLamda,iType,iIterNum,Mesh,this->vecHandlePoint,this->vecHandleNbVertex,
+		this->ROIVertices,this->AnchorVertices,this->vecDeformCurvePoint3d,true);
 	////recaculate the model
-	//OBJHandle::UnitizeCGALPolyhedron(Mesh,false,false);
-	//Mesh.SetRenderInfo(true,true,true,true,true);
+	OBJHandle::UnitizeCGALPolyhedron(Mesh,false,false);
+	Mesh.SetRenderInfo(true,true,true,true,true);
 
-	//std::ofstream outLR("result.obj",ios_base::out | ios_base::trunc);
-	//print_polyhedron_wavefront(outLR,Mesh);
+	std::ofstream outLR("resultLR.obj",ios_base::out | ios_base::trunc);
+	print_polyhedron_wavefront(outLR,Mesh);
+
+	//-------------------------------------------------------------------------------------
+	//local refinement related
 
 	this->vecHandlePoint.clear();
 	this->vecDeformCurvePoint3d.clear();
