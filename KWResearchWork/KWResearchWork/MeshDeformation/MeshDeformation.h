@@ -85,6 +85,22 @@ public:
 	//import material from file
 	void ImportMat();
 
+	//local refinement related functions
+	//local refine after deformation
+	void DeformationLocalRefine(KW_Mesh OldMesh,KW_Mesh& NewMesh,vector<Point_3> OldHandlePos,vector<Point_3> NewHandlePos,
+		double dSquaredDistanceThreshold,vector<Vertex_handle>& vecHandleNb,vector<Vertex_handle>& ROIVertices,vector<Vertex_handle>& vecAnchorVertices,
+		vector<Point_3>& testCentroidPoint,vector<Point_3>& testmovedCentroidPoint,vector<Facet_handle>& testfhRefineTri);
+	//mark all vertices: 0: irrelevant vertices; 1: handle; 2: roi; 3:static; 4: new roi; 5: new static
+	void SetVerMark(KW_Mesh& NewMesh,vector<Vertex_handle>& vecHandleNb,vector<Vertex_handle>& ROIVertices,vector<Vertex_handle>& vecAnchorVertices);
+	//since more vertices are added, the roi and static vertices need to be adjusted
+	void ResetRoiStaticVer(KW_Mesh& NewMesh,vector<Vertex_handle>& ROIVertices,vector<Vertex_handle>& vecAnchorVertices);
+	//find triangles needed to be locally refined because of centroid movement
+	int GetRefineTri(KW_Mesh OldMesh,KW_Mesh& NewMesh,vector<Point_3> OldHandlePos,vector<Point_3> NewHandlePos,
+		double dSquaredDistanceThreshold,vector<Point_3>& testCentroidPoint,vector<Point_3>& testmovedCentroidPoint,vector<Facet_handle>& fhRefineTri);
+	//update vertex positions after dividing
+	void LocalRefineUpdateVertexPos(vector<Vertex_handle> vecNewEdgeVertex,vector<Vertex_handle> vecOriVertex);
+
+
 	//render this plane or not
 	//plane0: normal plane1:tangential plane2:binormal
 	bool bRenderRefPlane[3];
