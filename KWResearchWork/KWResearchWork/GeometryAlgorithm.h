@@ -230,14 +230,6 @@ public:
 	bool ReversePointsOrder3d(Point_3 OriginCurveStartPoint,std::vector<Point_3>& DeformCurve);
 	bool ReversePointsOrder2d(HPCPoint OriginCurveStartPoint,std::vector<HPCPoint>& DeformCurve);
 
-	//local refine after deformation
-	static void DeformationLocalRefine(KW_Mesh OldMesh,KW_Mesh& NewMesh,
-					std::vector<Point_3> OldHandlePos,
-					std::vector<Point_3> NewHandlePos,
-					double dSquaredDistanceThreshold,
-					std::vector<Point_3>& testCentroidPoint,
-					std::vector<Point_3>& testmovedCentroidPoint,
-					std::vector<Facet_handle>& testfhRefineTri);
 
 	//local refine after deformation
 	static void ExtrusionLocalRefine(KW_Mesh& NewMesh,std::vector<Facet_handle>& fhRefineTri);
@@ -317,18 +309,10 @@ public:
 	//A*X=B
 	static void SolveLinearEquation(std::vector<std::vector<double>> A,std::vector<double>B,std::vector<double>& X);
 	
-protected:
-	//find triangles needed to be locally refined because of centroid movement
-	static int GetRefineTri(KW_Mesh OldMesh,KW_Mesh& NewMesh,
-					std::vector<Point_3> OldHandlePos,
-					std::vector<Point_3> NewHandlePos,
-					double dSquaredDistanceThreshold,
-					std::vector<Point_3>& testCentroidPoint,
-					std::vector<Point_3>& testmovedCentroidPoint,
-					std::vector<Facet_handle>& fhRefineTri);
-
 	static void DivideFacets(KW_Mesh& NewMesh,std::vector<Facet_handle>& fhRefineTri,std::vector<Vertex_handle>& vecNewEdgeVertex,
-							std::vector<Vertex_handle>& vecOriVertex);
+		std::vector<Vertex_handle>& vecOriVertex);
+
+protected:
 
 	//divide facet with 6 edges into 4 triangles
 	static void DivideFacet6Eto4Tri(KW_Mesh& NewMesh,Facet_handle& fhRefineTri,std::vector<Vertex_handle>& vecNewEdgeVertex,
@@ -347,8 +331,6 @@ protected:
 		std::vector<Vertex_handle>& vecOriVertex);
 	//divide facet with 4 edges into 2 triangles
 	static void DivideFacet4Eto2Tri(KW_Mesh& NewMesh,Facet_handle& fhRefineTri);
-	//update vertex positions after dividing
-	static void LocalRefineUpdateVertexPos(std::vector<Vertex_handle> vecNewEdgeVertex,std::vector<Vertex_handle> vecOriVertex);
 
 	static void SetCurvatureColor(KW_Mesh& mesh,int iCurType);//0 for mean curvature,1 for gaussian curvature
 
