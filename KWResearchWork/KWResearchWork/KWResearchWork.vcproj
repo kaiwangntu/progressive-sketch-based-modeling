@@ -71,7 +71,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				IgnoreDefaultLibraryNames="libcmtd.lib;libcmt.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib;libcmt.lib;mpfr-vc90-mt-gd.lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -153,7 +153,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
-				IgnoreDefaultLibraryNames="libcmt.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib;libcmt.lib;mpfr-vc90-mt.lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
