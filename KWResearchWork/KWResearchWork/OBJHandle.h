@@ -254,7 +254,7 @@ public:
 	static GLvoid  glmReadOBJ(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter);
 
 	//with new data structure
-	static GLvoid  glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,vector<double> vecDefaultColor,bool bSetRenderInfo=true);
+	static GLvoid  glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,bool bSetRenderInfo=true);
 	
 	static GLvoid	glmWriteOBJ(GLMmodel* model, char* filename, GLuint mode);
 	static GLvoid	glmDraw(GLMmodel* model, GLuint mode);
