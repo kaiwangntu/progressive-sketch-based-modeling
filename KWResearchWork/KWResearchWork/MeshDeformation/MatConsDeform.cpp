@@ -765,7 +765,7 @@ void CMatConsDeform::LearnMatFromSrc(int iType,KW_Mesh& Mesh,vector<CString> vec
 		KW_Mesh TmpModel;
 		vector<double> Tempclr;
 		Tempclr.push_back(0);Tempclr.push_back(0);Tempclr.push_back(0);Tempclr.push_back(0);
-		OBJHandle::glmReadOBJNew(vecTmpName.at(i).GetBuffer(vecTmpName.at(i).GetLength()),TmpModel,false,false,Tempclr,false);
+		OBJHandle::glmReadOBJNew(vecTmpName.at(i).GetBuffer(vecTmpName.at(i).GetLength()),TmpModel,false,false,false);
 		assert(Mesh.size_of_vertices()==TmpModel.size_of_vertices());
 		assert(Mesh.size_of_halfedges()==TmpModel.size_of_halfedges());
 		assert(Mesh.size_of_facets()==TmpModel.size_of_facets());
