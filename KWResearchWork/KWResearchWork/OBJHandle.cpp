@@ -509,7 +509,7 @@ GLvoid OBJHandle::glmReadOBJ(char* filename,KW_Mesh& mesh,bool bScale,bool bCent
 //	return model;
 }
 
-GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,vector<double> vecDefaultColor,bool bSetRenderInfo/* =true */)
+GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,bool bSetRenderInfo/* =true */)
 {
 	DBWindowWrite("Reading file...\n");
 	KW_Polyhedron model;
@@ -533,7 +533,7 @@ GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bC
 
 	UnitizeCGALPolyhedron(mesh,bScale,bCenter);
 	//UnitizeCGALPolyhedron(mesh,false,false);
-	GeometryAlgorithm::SetUniformMeshColor(mesh,vecDefaultColor);
+	//GeometryAlgorithm::SetUniformMeshColor(mesh,vecDefaultColor);
 
 	if (bSetRenderInfo)
 	{
