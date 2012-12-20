@@ -254,8 +254,11 @@ public:
 	static GLvoid  glmReadOBJ(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter);
 
 	//with new data structure
-	static GLvoid  glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,bool bSetRenderInfo=true);
-	
+	static GLvoid  glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,vector<double> vecDefaultColor,bool bSetRenderInfo=true);
+
+	//set color for each vertex
+	static void SetUniformMeshColor(KW_Mesh& mesh,std::vector<double> vecColor);
+
 	static GLvoid	glmWriteOBJ(GLMmodel* model, char* filename, GLuint mode);
 	static GLvoid	glmDraw(GLMmodel* model, GLuint mode);
 	static GLuint 	glmList(GLMmodel* model, GLuint mode);

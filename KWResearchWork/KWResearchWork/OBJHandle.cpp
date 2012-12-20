@@ -509,7 +509,7 @@ GLvoid OBJHandle::glmReadOBJ(char* filename,KW_Mesh& mesh,bool bScale,bool bCent
 //	return model;
 }
 
-GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,bool bSetRenderInfo/* =true */)
+GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bCenter,vector<double> vecDefaultColor,bool bSetRenderInfo/* =true */)
 {
 	DBWindowWrite("Reading file...\n");
 	KW_Polyhedron model;
@@ -533,7 +533,7 @@ GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bC
 
 	UnitizeCGALPolyhedron(mesh,bScale,bCenter);
 	//UnitizeCGALPolyhedron(mesh,false,false);
-	//GeometryAlgorithm::SetUniformMeshColor(mesh,vecDefaultColor);
+	SetUniformMeshColor(mesh,vecDefaultColor);
 
 	if (bSetRenderInfo)
 	{
@@ -542,6 +542,15 @@ GLvoid OBJHandle::glmReadOBJNew(char* filename,KW_Mesh& mesh,bool bScale,bool bC
 	}
 
 	DBWindowWrite("mesh loaded...\n");
+}
+
+void OBJHandle::SetUniformMeshColor(KW_Mesh& mesh,vector<double> vecColor)
+{
+	assert(vecColor.size()==4);
+	for (Vertex_iterator i=mesh.vertices_begin();i!=mesh.vertices_end();i++)
+	{
+		i->SetColor(vecColor);
+	}
 }
 
 /* glmWriteOBJ: Writes a model description in Wavefront .OBJ format to
