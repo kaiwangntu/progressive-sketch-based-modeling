@@ -199,8 +199,8 @@ BOOL CKWResearchWorkDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	}
 
 //	OBJHandle::glmReadOBJ((char *)lpszPathName,this->Mesh,bScale,bCenter);
-	OBJHandle::glmReadOBJNew((char *)lpszPathName,this->Mesh,bScale,bCenter);
-	GeometryAlgorithm::SetUniformMeshColor(this->Mesh,this->vecDefaultColor);
+	OBJHandle::glmReadOBJNew((char *)lpszPathName,this->Mesh,bScale,bCenter,this->vecDefaultColor);
+
 	if(this->Mesh.empty())
 	{
 		AfxMessageBox("Read File Error!");
