@@ -1108,6 +1108,18 @@ BOOL CKWResearchWorkView::PreTranslateMessage(MSG* pMsg)
 				return TRUE;
 			}
 		}
+		else if (pMsg->wParam==VK_F5)
+		{
+			pDoc->OnViewSelectMode();
+			RedrawWindow();
+			return TRUE;
+		}
+		else if (pMsg->wParam==VK_F6)
+		{
+			pDoc->OnSketchMode();
+			RedrawWindow();
+			return TRUE;
+		}
 	}
 	 return CView::PreTranslateMessage(pMsg);
 }
@@ -1388,16 +1400,16 @@ void CKWResearchWorkView::Render(GLenum mode)
 	if (pDoc->GetRenderPreMesh()==MESH_EXIST_VIEW && !pDoc->GetMesh().empty())
 	{
 		//the mesh is selected
-		if (pDoc->GetRBSelName()==MODEL_NAME)
-		{
-			OBJHandle::DrawCGALPolyhedron(&(pDoc->GetMesh()),pDoc->GetViewStyle(),COLOR_SELECTED_OPAQUE,
-				pDoc->GetDefaultColor(),mode);
-		}
-		else
-		{
+		//if (pDoc->GetRBSelName()==MODEL_NAME)
+		//{
+		//	OBJHandle::DrawCGALPolyhedron(&(pDoc->GetMesh()),pDoc->GetViewStyle(),COLOR_SELECTED_OPAQUE,
+		//		pDoc->GetDefaultColor(),mode);
+		//}
+		//else
+		//{
 			OBJHandle::DrawCGALPolyhedron(&(pDoc->GetMesh()),pDoc->GetViewStyle(),pDoc->GetColorMode(),
 				pDoc->GetDefaultColor(),mode);
-		}
+		//}
 	}
 
 //	RenderIcon(mode);
@@ -1461,17 +1473,17 @@ void CKWResearchWorkView::Render(GLenum mode)
 
 	if (pDoc->GetRenderPreMesh()==MESH_PREVIEW && !pDoc->GetMesh().empty())
 	{
-		//the mesh is selected
-		if (pDoc->GetRBSelName()==MODEL_NAME)
-		{
-			OBJHandle::DrawCGALPolyhedron(&(pDoc->GetMesh()),pDoc->GetViewStyle(),COLOR_SELECTED_TRANSPARENT,
-				pDoc->GetDefaultColor(),mode);
-		}
-		else
-		{
+		////the mesh is selected
+		//if (pDoc->GetRBSelName()==MODEL_NAME)
+		//{
+		//	OBJHandle::DrawCGALPolyhedron(&(pDoc->GetMesh()),pDoc->GetViewStyle(),COLOR_SELECTED_TRANSPARENT,
+		//		pDoc->GetDefaultColor(),mode);
+		//}
+		//else
+		//{
 			OBJHandle::DrawCGALPolyhedron(&(pDoc->GetMesh()),pDoc->GetViewStyle(),COLOR_TRANSPARENT,//pDoc->GetColorMode(),
 				pDoc->GetDefaultColor(),mode);
-		}
+		//}
 	}
 
 

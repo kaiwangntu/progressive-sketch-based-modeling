@@ -33,4 +33,5 @@ public:
 	
 	void Init();
 	afx_msg void OnBnClickedExExtrude();
+	afx_msg void OnBnClickedExExtrudeSimple();
 };

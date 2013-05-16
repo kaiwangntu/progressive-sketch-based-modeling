@@ -424,8 +424,7 @@ void CMeshCreation::Convert2DProfileTo3D()
 	this->bPlaneReadyState=CREATION_PLANE_NOT_READY_FOR_DRAWING;
 
 	GeometryAlgorithm compute;
-//	compute.ProcessCurverPoint(this->UserInput2DProfile,5.0);//20
-	compute.ProcessCurverPoint(this->UserInput2DProfile,15.0);//15.0
+	compute.ProcessCurverPoint(this->UserInput2DProfile,10.0);//15.0
 
 
 	CKWResearchWorkView* pView=(CKWResearchWorkView*)this->pDoc->GetView(RUNTIME_CLASS(CKWResearchWorkView));
@@ -919,7 +918,9 @@ void CMeshCreation::GenerateMesh(KW_Mesh& Mesh,vector<double> vecMeshColor)
 			return;
 		}
 		//this->kwcs2surf->mesh->splitsmooth2(0, 2.5, 10, 50, 0.5);
-		this->kwcs2surf->mesh->splitsmooth2(0, 1.414, 10, 50, 0.5);
+
+		//this->kwcs2surf->mesh->splitsmooth2(0, 1.414, 10, 50, 0.5);
+
 		//this->kwcs2surf->mesh->splitsmooth(0, 2.5, 10, 50);
 		//this->kwcs2surf->mesh->splitsmooth(0, 1.414, 10, 50);
 		this->kwcs2surf->CheckCCW();

@@ -32,6 +32,8 @@ public:
 
 	bool ExtrudeMesh(KW_Mesh& Mesh,vector<vector<Point_3> >& testvecvecNewEdgeVertexPos);
 
+	bool ExtrudeMeshSimple(KW_Mesh& Mesh,vector<vector<Point_3> >& testvecvecNewEdgeVertexPos);
+
 	void GetExtrudeSilhPlane(Plane_3& BestFittingPlane,
 		Point3D* PlaneBoundaryPoints,GLdouble* modelview,GLdouble* projection,GLint* viewport);
 
@@ -89,11 +91,17 @@ private:
 		Plane_3 BestFittingPlane,vector<vector<Point_3> >& testvecvecNewEdgeVertexPos,
 		vector<Facet_handle>& fhExtrudedFacet);
 
+	int ExtrudeClosedCurveSimple(KW_Mesh& Mesh,vector<Halfedge_handle>& hhClosedCurve,
+		Plane_3 BestFittingPlane,vector<vector<Point_3> >& testvecvecNewEdgeVertexPos,
+		vector<Facet_handle>& fhExtrudedFacet);
+
 	//extrude a new layer
 	int ExtrudeNewLayer(KW_Mesh& Mesh,vector<Point_3> NewEdgeVertexPos,
 						vector<Halfedge_handle>& hhNewToCenter);//new Halfedge_handle point to new center
 
 	int GetExtrusionPointsPos(Plane_3 BestFittingPlane,vector<vector<Point_3> >& vecvecNewEdgeVertexPos);
+
+	int GetExtrusionPointsPosSimple(Plane_3 BestFittingPlane,vector<vector<Point_3> >& vecvecNewEdgeVertexPos);
 
 	//get extruded vertices to allow further edit
 	int GetExtrudedVertices(vector<vector<Vertex_handle> >& OutvecvecExtrudedVertex);

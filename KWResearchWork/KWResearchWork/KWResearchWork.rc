@@ -492,6 +492,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "Extrude",IDC_EX_Extrude,57,38,63,14
+    PUSHBUTTON      "Extrude Simple",IDC_EX_ExtrudeSimple,57,60,63,14
 END
 
 IDD_CP_Cutting DIALOGEX 0, 0, 182, 410
