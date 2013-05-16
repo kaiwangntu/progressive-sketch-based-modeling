@@ -2202,7 +2202,7 @@ void inline Mesh::computeNorm(float* oldval, float* norms, float* mags )
 		MyMath::getVec(&(oldval[ sufface[ i * 3] * 3 ]), &(oldval[ sufface[ i * 3 + 1] * 3 ]), vec1 );
 		MyMath::getVec(&(oldval[ sufface[ i * 3] * 3 ]), &(oldval[ sufface[ i * 3 + 2] * 3 ]), vec2 );
 		MyMath::crossProductNotNorm( vec1, vec2, nm);
-
+		
 		if ( sufmat[i*2] > sufmat[i*2 + 1] )
 		{
 			nm[0] = -nm[0] ;

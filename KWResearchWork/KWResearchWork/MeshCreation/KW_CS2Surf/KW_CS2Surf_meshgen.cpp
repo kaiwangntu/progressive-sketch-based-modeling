@@ -296,22 +296,54 @@ bool KW_CS2Surf::PerturbOneOutBound(ResortedFace FaceInfo,Polygon_with_holes_3 P
 			//	NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO);
 			//}
 
-			////just for make good examples for the "C" shape and partition example
-			//if (iSubSpaceId==13)
+			//just for make good examples for the "C" shape and partition example
+			//if (iSubSpaceId==0)//13
 			//{
-			//	NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*1.25);///2//1.25
-			//	//if (FaceInfo.iFacePlaneID==3)
-			//	//{
-			//	//	NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*1.7);///2//1.25//1.7
-			//	//}
-			//	//else
-			//	//{
-			//	//	NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*1.05);///2//1.25
-			//	//}
+			//	if (FaceInfo.iFacePlaneID==1)
+			//	{
+			//		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.45);
+			//	}
+			//	else if (FaceInfo.iFacePlaneID==0)
+			//	{
+			//		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.5);//0.6
+			//	}
 			//}
+			////else if (iSubSpaceId==1)
+			////{
+			////	if (FaceInfo.iFacePlaneID==1)
+			////	{
+			////		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.45);
+			////	}
+			////	else
+			////	{
+			////		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.5);
+			////	}
+			////}
+			////else if (iSubSpaceId==4)
+			////{
+			////	if (FaceInfo.iFacePlaneID==2)
+			////	{
+			////		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.45);
+			////	}
+			////	else
+			////	{
+			////		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.5);
+			////	}
+			////}
+			////else if (iSubSpaceId==5)
+			////{
+			////	if (FaceInfo.iFacePlaneID==2)
+			////	{
+			////		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.45);
+			////	}
+			////	else
+			////	{
+			////		NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*0.5);
+			////	}
+			////}
 			//else if (iSubSpaceId==3)
 			//{
-			//	NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*1.1);///*1.2//1.1
+			//	NewOutBound.push_back(Pwh3D.outer_boundary.at(i)+HeightVec*NON_INTSC_POLY_EXTRU_HEIGHT_RATIO*1);//1.1);///*1.2//1.1
 			//}
 			//else if (iSubSpaceId!=2 && iSubSpaceId!=3)
 			//{

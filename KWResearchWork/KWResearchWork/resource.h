@@ -117,6 +117,8 @@
 #define IDC_DE_SLIDER_Material          1079
 #define IDC_SM_BilateralSmooth          1080
 #define IDC_DE_ShowROI                  1080
+#define IDC_EX_Extrude2                 1080
+#define IDC_EX_ExtrudeSimple            1080
 #define IDC_SM_LaplacianSmooth          1081
 #define IDC_DE_ShowAnchor               1081
 #define IDC_SM_TaubinLambdaMuSmooth     1082
@@ -126,7 +128,6 @@
 #define IDC_DE_SetMat                   1087
 #define IDC_MOD_ALGO_TJ                 1088
 #define IDC_MOD_ALGO_PROG               1089
-#define IDC_CR_COMBO_S                  1090
 #define IDC_CR_COMBO_SINGLEPOLY         1090
 #define ID_VIEW_3DAXISON                32773
 #define ID_VIEW_BEST                    32775

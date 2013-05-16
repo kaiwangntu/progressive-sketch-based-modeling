@@ -476,6 +476,55 @@ bool CMeshExtrusion::ExtrudeMesh(KW_Mesh& Mesh,vector<vector<Point_3> >& testvec
 	return true;
 }
 
+bool CMeshExtrusion::ExtrudeMeshSimple(KW_Mesh& Mesh,vector<vector<Point_3> >& testvecvecNewEdgeVertexPos)
+{
+	if (this->hExtrusionClosedCurveVertex3d.empty()||this->ExtrusionSilhPoints.empty())
+	{
+		return false;
+	}
+
+	vector<Halfedge_handle> hhClosedCurve;
+	GetClosedStrokeHH(hhClosedCurve);
+	DeleteFacetsInClosedCurve(Mesh,hhClosedCurve);
+	testvecvecNewEdgeVertexPos.clear();
+
+	vector<Facet_handle> fhExtrudedFacet;
+	ExtrudeClosedCurveSimple(Mesh,hhClosedCurve,this->BestFittingPlane,testvecvecNewEdgeVertexPos,fhExtrudedFacet);
+
+	//local refine
+	//GeometryAlgorithm::ExtrusionLocalRefine(Mesh,fhExtrudedFacet);
+	vector<Vertex_handle> vecVertexToSmooth;
+
+	//put only sewing vertices and their neighbors in
+	//GetVerticesToSmooth(vecVertexToSmooth);
+	//put all extruded vertices in
+	for (unsigned int i=0;i<this->vecvecExtrudedVertex.size();i++)
+	{
+		vecVertexToSmooth.insert(vecVertexToSmooth.end(),this->vecvecExtrudedVertex.at(i).begin(),
+			this->vecvecExtrudedVertex.at(i).end());
+	}
+
+
+	GeometryAlgorithm::LaplacianSmooth(10,0.1,vecVertexToSmooth);
+	//	GeometryAlgorithm::TaubinLambdaMuSmooth(10,0.5,-0.53,vecVertexToSmooth);
+
+	//this->vecTestPoints.clear();
+	//for (unsigned int i=0;i<vecVertexToSmooth.size();i++)
+	//{
+	//	this->vecTestPoints.push_back(vecVertexToSmooth.at(i)->point());
+	//}
+
+	OBJHandle::UnitizeCGALPolyhedron(Mesh,false,false);
+	Mesh.SetRenderInfo(true,true,true,true,true);
+
+	this->hExtrusionClosedCurveVertex3d.clear();
+	this->ExtrusionSilhPoints.clear();
+	this->ClosedCurveProj.clear();
+	this->iDrawingCurveType=NONE_SELECTED;
+
+	return true;
+}
+
 int CMeshExtrusion::GetClosedStrokeHH(vector<Halfedge_handle>& hhClosedCurve)
 {
 	for (unsigned int i=0;i<this->hExtrusionClosedCurveVertex3d.size();i++)
@@ -653,6 +702,85 @@ int CMeshExtrusion::ExtrudeClosedCurve(KW_Mesh& Mesh,vector<Halfedge_handle>& hh
 	return 0;
 }
 
+int CMeshExtrusion::ExtrudeClosedCurveSimple(KW_Mesh& Mesh,vector<Halfedge_handle>& hhClosedCurve,
+									   Plane_3 BestFittingPlane,vector<vector<Point_3> >& testvecvecNewEdgeVertexPos,
+									   vector<Facet_handle>& fhExtrudedFacet)
+{
+	//fill the hole of hhClosedCurve 
+	Mesh.fill_hole(hhClosedCurve.front());
+	Mesh.normalize_border();
+	int test00=Mesh.size_of_border_edges();
+	assert(test00==0);
+
+	//create a center vertex
+	std::list<Point_3> EdgePoints;
+	for (unsigned int i=0;i<this->hExtrusionClosedCurveVertex3d.size();i++)
+	{
+		EdgePoints.push_back(this->hExtrusionClosedCurveVertex3d.at(i)->point());
+	}
+	Halfedge_handle hhToCenterPoint=Mesh.create_center_vertex(hhClosedCurve.front());
+
+
+	vector<Halfedge_handle> hhNewToCenter;//halfedge pointing to the center vertex
+	for (unsigned int i=0;i<hhClosedCurve.size();i++)
+	{
+		hhNewToCenter.push_back(hhClosedCurve.at(i)->prev()->opposite());
+	}
+
+	vector<vector<Point_3> > vecvecNewEdgeVertexPos;
+	GetExtrusionPointsPosSimple(BestFittingPlane,vecvecNewEdgeVertexPos);
+	testvecvecNewEdgeVertexPos=vecvecNewEdgeVertexPos;
+
+	Point_3 TopPoint;
+	if (ExtrusionSilhPoints.size()%2==0)
+	{
+		TopPoint=CGAL::centroid(vecvecNewEdgeVertexPos.back().begin(),vecvecNewEdgeVertexPos.back().end());
+	}
+	else
+	{
+		TopPoint=ExtrusionSilhPoints.at(ExtrusionSilhPoints.size()/2);
+	}
+
+	hhToCenterPoint->vertex()->point()=TopPoint;
+
+	//put the initial vertices in
+	this->vecvecExtrudedVertex.push_back(this->hExtrusionClosedCurveVertex3d);
+	for (unsigned int i=0;i<vecvecNewEdgeVertexPos.size();i++)
+	{
+		vector<Point_3> NewEdgeVertexPos=vecvecNewEdgeVertexPos.at(i);
+		ExtrudeNewLayer(Mesh,NewEdgeVertexPos,hhNewToCenter);
+
+		vector<Vertex_handle> vecExtrudedVertex;
+		for (unsigned int j=0;j<hhNewToCenter.size();j++)
+		{
+			vecExtrudedVertex.push_back(hhNewToCenter.at(j)->opposite()->vertex());
+		}
+		this->vecvecExtrudedVertex.push_back(vecExtrudedVertex);
+
+		//store extruded facets for local refine
+		for (unsigned int j=0;j<hhNewToCenter.size();j++)
+		{
+			Halfedge_handle hhtemp=hhNewToCenter.at(j)->opposite()->next()->opposite();
+			Halfedge_handle hhtemp2=hhtemp->next()->opposite();
+			fhExtrudedFacet.push_back(hhtemp->facet());
+			fhExtrudedFacet.push_back(hhtemp2->facet());
+		}
+	}
+	assert(vecvecNewEdgeVertexPos.size()==this->vecvecExtrudedVertex.size()-1);
+
+	//store the last extruded facets for local refine
+	for (unsigned int i=0;i<hhNewToCenter.size();i++)
+	{
+		fhExtrudedFacet.push_back(hhNewToCenter.at(i)->facet());
+	}
+
+
+	Mesh.normalize_border();
+	assert(Mesh.size_of_border_edges()==0);
+
+	return 0;
+}
+
 int CMeshExtrusion::ExtrudeNewLayer(KW_Mesh& Mesh,vector<Point_3> NewEdgeVertexPos,
 									vector<Halfedge_handle>& hhNewToCenter)
 {
@@ -765,6 +893,93 @@ int CMeshExtrusion::GetExtrusionPointsPos(Plane_3 BestFittingPlane,vector<vector
 			vec=vec*dLen;
 			NewLayerPoints.at(j)=NewMiddlePoint+vec;
 		}
+
+		vecvecNewEdgeVertexPos.push_back(NewLayerPoints);
+	}
+	return vecvecNewEdgeVertexPos.size();
+}
+
+int CMeshExtrusion::GetExtrusionPointsPosSimple(Plane_3 BestFittingPlane,vector<vector<Point_3> >& vecvecNewEdgeVertexPos)
+{
+	//reverse ExtrusionSilhPoints if needed
+	if (CGAL::has_larger_distance_to_point(this->RotateXAxisStartPoint,this->ExtrusionSilhPoints.front(),
+		this->ExtrusionSilhPoints.back()))
+	{
+		std::reverse(this->ExtrusionSilhPoints.begin(),this->ExtrusionSilhPoints.end());
+	}
+
+	//get the projection points
+	Plane_3 ClosedCurvePlane;
+	vector<Point_3> ClosedCurvePoints3d;
+	for (unsigned int i=0;i<this->hExtrusionClosedCurveVertex3d.size();i++)
+	{
+		ClosedCurvePoints3d.push_back(this->hExtrusionClosedCurveVertex3d.at(i)->point());
+	}
+	Point_3 ClosedCurveCentroidPoint;
+	double result=linear_least_squares_fitting_3(ClosedCurvePoints3d.begin(),ClosedCurvePoints3d.end(),
+		ClosedCurvePlane,ClosedCurveCentroidPoint,CGAL::Dimension_tag<0>());
+
+	vector<Point_3> ClosedCurvePointsProj3d;
+	for (unsigned int i=0;i<ClosedCurvePoints3d.size();i++)
+	{
+		ClosedCurvePointsProj3d.push_back(ClosedCurvePlane.projection(ClosedCurvePoints3d.at(i)));
+	}
+
+	//rotate ClosedCurvePointsProj3d along axis first
+	GeometryAlgorithm compute;
+	compute.ComputeRotatedCurve(this->RotateXAxisStartPoint,this->RotateXAxisEndPoint,this->dAccumulatedAngleX,
+		ClosedCurvePointsProj3d);
+
+	//translate,rotate,scale in one plane
+	int iGroupNum=(int)ExtrusionSilhPoints.size();//(int)(ExtrusionSilhPoints.size()/2);
+	Point_3 OldMiddlePoint=CGAL::midpoint(this->RotateXAxisEndPoint,this->RotateXAxisStartPoint);
+	for (int i=0;i<iGroupNum;i++)
+	{
+		//Point_3 NewAxisStartPoint=this->ExtrusionSilhPoints.at(i);
+		//Point_3 NewAxisEndPoint=this->ExtrusionSilhPoints.at(this->ExtrusionSilhPoints.size()-1-i);
+		//Point_3 NewMiddlePoint=CGAL::midpoint(NewAxisStartPoint,NewAxisEndPoint);
+		Point_3 NewMiddlePoint=this->ExtrusionSilhPoints.at(i);
+		Vector_3 vec=NewMiddlePoint-OldMiddlePoint;
+		vector<Point_3> NewLayerPoints;
+		//move to the height of each layer
+		for (unsigned int j=0;j<ClosedCurvePointsProj3d.size();j++)
+		{
+			Point_3 OldPoint=ClosedCurvePointsProj3d.at(j);
+			Point_3 NewPoint=OldPoint+vec;
+			NewLayerPoints.push_back(NewPoint);
+		}
+
+		////rotate along axis through middle point&perpendicular to plane
+		//Point_3 TransStartPoint=this->RotateXAxisStartPoint+vec;
+		//Vector_3 vecFrom=TransStartPoint-NewMiddlePoint;
+		//Vector_3 vecTo=NewAxisStartPoint-NewMiddlePoint;
+		//Vector_3 vecCrossResult;
+		//double angle=compute.GetAngleBetweenTwoVectors3d(vecFrom,vecTo,vecCrossResult);
+		//Point_3 AxisEndPoint=NewMiddlePoint+vecCrossResult;
+
+		//Point_3 testRotatePoint0=NewLayerPoints.front();
+		//Point_3 testRotatePoint1=testRotatePoint0;
+		//compute.ComputeRotatedPoint(NewMiddlePoint,AxisEndPoint,angle,testRotatePoint0);
+		//compute.ComputeRotatedPoint(AxisEndPoint,NewMiddlePoint,angle,testRotatePoint1);
+		//if (CGAL::has_larger_distance_to_point(NewAxisStartPoint,testRotatePoint0,testRotatePoint1))
+		//{
+		//	compute.ComputeRotatedCurve(AxisEndPoint,NewMiddlePoint,angle,NewLayerPoints);
+		//}
+		//else
+		//{
+		//	compute.ComputeRotatedCurve(NewMiddlePoint,AxisEndPoint,angle,NewLayerPoints);
+		//}
+
+
+		////scale
+		//double dLen=sqrt(vecTo.squared_length());
+		//for (unsigned int j=0;j<NewLayerPoints.size();j++)
+		//{
+		//	Vector_3 vec=NewLayerPoints.at(j)-NewMiddlePoint;
+		//	vec=vec/sqrt(vec.x()*vec.x()+vec.y()*vec.y()+vec.z()*vec.z());
+		//	vec=vec*dLen;
+		//	NewLayerPoints.at(j)=NewMiddlePoint+vec;
+		//}
 
 		vecvecNewEdgeVertexPos.push_back(NewLayerPoints);
 	}

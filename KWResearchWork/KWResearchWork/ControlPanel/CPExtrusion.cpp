@@ -34,6 +34,7 @@ void CCPExtrusion::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CCPExtrusion, CDialog)
 	ON_BN_CLICKED(IDC_EX_Extrude, &CCPExtrusion::OnBnClickedExExtrude)
+	ON_BN_CLICKED(IDC_EX_ExtrudeSimple, &CCPExtrusion::OnBnClickedExExtrudeSimple)
 END_MESSAGE_MAP()
 
 
@@ -50,6 +51,29 @@ void CCPExtrusion::OnBnClickedExExtrude()
 	BeginWaitCursor();
 
 	if (!pDoc->GetMeshExtrusion().ExtrudeMesh(pDoc->GetMesh(),pDoc->GettestvecvecNewEdgeVertexPos()))
+	{
+		return;
+	}
+	pDoc->GettestvecvecNewEdgeVertexPos().clear();
+
+	CString  strTitle=pDoc->GetTitle();
+	strTitle=strTitle+"*";
+	pDoc->SetTitle(strTitle);
+	pDoc->SetModifiedFlag(TRUE);
+
+	EndWaitCursor();
+	pDoc->UpdateAllViews((CView*)pCP);
+	pButton->EnableWindow(TRUE);
+}
+
+void CCPExtrusion::OnBnClickedExExtrudeSimple()
+{
+	// TODO: Add your control notification handler code here
+	CWnd* pButton=this->GetDlgItem(IDC_EX_ExtrudeSimple);
+	pButton->EnableWindow(FALSE);
+	BeginWaitCursor();
+
+	if (!pDoc->GetMeshExtrusion().ExtrudeMeshSimple(pDoc->GetMesh(),pDoc->GettestvecvecNewEdgeVertexPos()))
 	{
 		return;
 	}

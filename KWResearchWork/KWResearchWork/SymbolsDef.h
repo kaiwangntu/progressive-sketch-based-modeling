@@ -34,7 +34,7 @@ typedef std::pair <int,int> Int_Int_Pair;
 
 const GLfloat OPAQUE_SELECTED_COLOR[] = {0.54f, 0.0f, 1.0f, 1.0f};
 const GLfloat TRANSPARENT_SELECTED_COLOR[] = {0.54f, 0.0f, 1.0f, 0.2f};
-const GLfloat OPAQUE_CROSS_SECTION_COLOR[] = {1.0f, 1.0f, 0.0f, 1.0f};
+const GLfloat OPAQUE_CROSS_SECTION_COLOR[] = {1.0f, 0.84f, 0.0f, 1.0f};
 const GLfloat TRANSPARENT_CROSS_SECTION_COLOR[] = {1.0f, 1.0f, 0.0f, 0.3f};
 
 #define MESH_NOT_PREVIEW 0

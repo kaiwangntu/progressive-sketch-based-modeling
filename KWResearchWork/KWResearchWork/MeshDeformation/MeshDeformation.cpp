@@ -23,7 +23,8 @@ void CMeshDeformation::Init(CKWResearchWorkDoc* pDataIn)
 	this->CurvePoint2D.clear();
 	this->iDrawingCurveType=NONE_SELECTED;
 	this->Plane_spin=0.0;
-	this->bRenderRefPlane[0]=this->bRenderRefPlane[1]=this->bRenderRefPlane[2]=true;
+	this->bRenderRefPlane[0]=this->bRenderRefPlane[1]=true;
+	this->bRenderRefPlane[2]=false;
 	this->bRenderSphere=true;
 	this->RefSphere=Sphere_3(Point_3(0,0,0),0);
 	this->bRenderHandleNb=false;
